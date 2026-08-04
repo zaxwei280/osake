@@ -1,7 +1,7 @@
 export const config = { runtime: "edge" };
 
 const NOTION_TOKEN = process.env.NOTION_TOKEN;
-const DB_ID = process.env.NOTION_DB_ID;
+const DB_ID = process.env.NOTION_DB_ID || "3b2d80b35c5380d98466d13673831fe8";
 
 export default async function handler(req) {
   if (req.method === "OPTIONS") {
@@ -21,7 +21,32 @@ export default async function handler(req) {
   };
 
   const body = await req.json().catch(() => ({}));
-  const { client, tracking, date, box_no } = body;
+  const { client, tracking, date, box_no, debug } = body;
+
+  // Debug mode - test connection
+  if (debug) {
+    try {
+      const res = await fetch(`https://api.notion.com/v1/databases/${DB_ID}`, {
+        method: "GET",
+        headers,
+      });
+      const data = await res.json();
+      return new Response(JSON.stringify({
+        db_id: DB_ID,
+        token_prefix: NOTION_TOKEN.slice(0, 20) + "...",
+        status: res.status,
+        db_title: data.title?.[0]?.plain_text || "(no title)",
+        properties: Object.keys(data.properties || {}),
+        error: data.message || null,
+      }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    } catch(e) {
+      return new Response(JSON.stringify({ error: e.message }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+  }
 
   // Build filter
   const filters = [];
