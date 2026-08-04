@@ -23,7 +23,7 @@ export default async function handler(req) {
   const body = await req.json().catch(() => ({}));
   const { client, tracking, date, box_no, debug } = body;
 
-  // Debug mode - test connection
+  // Debug mode
   if (debug) {
     try {
       const res = await fetch(`https://api.notion.com/v1/databases/${DB_ID}`, {
@@ -48,9 +48,9 @@ export default async function handler(req) {
     }
   }
 
-  // Build filter
+  // Build filter - all rich_text except 回台日期
   const filters = [];
-  if (client)   filters.push({ property: "客戶編號", title:     { contains: client } });
+  if (client)   filters.push({ property: "客戶編號", rich_text: { contains: client } });
   if (tracking) filters.push({ property: "宅配編號", rich_text: { contains: tracking } });
   if (box_no)   filters.push({ property: "回台箱號", rich_text: { contains: box_no } });
   if (date)     filters.push({ property: "回台日期", date:      { equals: date } });
@@ -72,26 +72,27 @@ export default async function handler(req) {
 
     const rows = (data.results || []).map(page => {
       const p = page.properties;
-      const get = (key, type) => {
+      const getText = (key) => {
         if (!p[key]) return "";
-        if (type === "title")     return p[key].title?.[0]?.plain_text || "";
-        if (type === "rich_text") return p[key].rich_text?.[0]?.plain_text || "";
-        if (type === "number")    return p[key].number ?? "";
-        if (type === "date")      return p[key].date?.start || "";
+        if (p[key].title)     return p[key].title?.[0]?.plain_text || "";
+        if (p[key].rich_text) return p[key].rich_text?.[0]?.plain_text || "";
+        if (p[key].number !== undefined) return p[key].number ?? "";
+        if (p[key].date)      return p[key].date?.start || "";
         return "";
       };
       return {
-        client:    get("客戶編號", "title"),
-        box_id:    get("酒箱編號", "rich_text"),
-        tracking:  get("宅配編號", "rich_text"),
-        carrier:   get("宅配業者", "rich_text"),
-        qty:       get("數量", "number"),
-        capacity:  get("容量", "number"),
-        box_type:  get("酒盒", "rich_text"),
-        merchant:  get("酒商", "rich_text"),
-        label:     get("酒標", "rich_text"),
-        ship_box:  get("回台箱號", "rich_text"),
-        ship_date: get("回台日期", "date"),
+        serial:    getText("流水號"),
+        client:    getText("客戶編號"),
+        box_id:    getText("酒箱編號"),
+        tracking:  getText("宅配編號"),
+        carrier:   getText("宅配業者"),
+        qty:       getText("數量"),
+        capacity:  getText("容量"),
+        box_type:  getText("酒盒"),
+        merchant:  getText("酒商"),
+        label:     getText("酒標"),
+        ship_box:  getText("回台箱號"),
+        ship_date: getText("回台日期"),
       };
     });
 
