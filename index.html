@@ -3,450 +3,329 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>W-82 出貨查詢</title>
+<title>W-82 酒查詢系統</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green-dark:#3a5438;--green-mid:#5a7a56;--green-light:#8aaa86;
+  --green-pale:#ddeedd;--green-bg:#f2f5f2;--gold:#8a7248;
+  --text:#222;--text-sub:#666;--white:#fff;--border:#c8d8c4;
+  --radius:14px;--shadow:0 2px 12px rgba(0,0,0,0.09);
+}
+body{font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:var(--green-bg);color:var(--text);min-height:100vh}
 
-  :root {
-    --green-dark:  #3a5438;
-    --green-mid:   #5a7a56;
-    --green-light: #8aaa86;
-    --green-pale:  #ddeedd;
-    --green-bg:    #f2f5f2;
-    --gold:        #8a7248;
-    --text:        #222;
-    --text-sub:    #666;
-    --white:       #fff;
-    --border:      #c8d8c4;
-    --radius:      12px;
-    --shadow:      0 2px 12px rgba(0,0,0,0.08);
-  }
+/* Header */
+header{background:var(--green-dark);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.18)}
+header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
+.back-btn{display:none;color:#fff;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit}
+.back-btn:hover{background:rgba(255,255,255,0.25)}
 
-  body {
-    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
-    background: var(--green-bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* ── Page: Home ── */
+#page-home{padding:32px 20px}
+.home-title{text-align:center;color:var(--green-dark);font-size:15px;font-weight:600;letter-spacing:2px;margin-bottom:24px;opacity:0.7}
+.client-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:900px;margin:0 auto}
+.client-tile{background:var(--green-dark);border-radius:var(--radius);padding:36px 16px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,background 0.15s;box-shadow:var(--shadow);border:2px solid transparent}
+.client-tile:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#4a6a48}
+.client-tile.other{background:var(--gold)}
+.client-tile.other:hover{background:#9a8258}
+.client-tile .name{color:#fff;font-size:26px;font-weight:800;letter-spacing:2px}
+.client-tile .sub{color:rgba(255,255,255,0.55);font-size:12px;margin-top:6px}
 
-  /* ── Header ── */
-  header {
-    background: var(--green-dark);
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  }
-  header h1 {
-    color: var(--white);
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 2px;
-  }
-  header span.sub {
-    color: var(--green-light);
-    font-size: 14px;
-    margin-left: 4px;
-  }
+/* ── Page: Client ── */
+#page-client{display:none;padding:24px 20px}
+.client-header{max-width:860px;margin:0 auto 20px}
+.client-name-big{font-size:32px;font-weight:800;color:var(--green-dark);letter-spacing:3px;margin-bottom:16px}
 
-  /* ── Search Panel ── */
-  .search-panel {
-    max-width: 900px;
-    margin: 32px auto 0;
-    padding: 0 20px;
-  }
+/* Search bar */
+.search-bar{background:#fff;border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;max-width:860px;margin:0 auto 20px}
+.sf{display:flex;flex-direction:column;gap:5px}
+.sf label{font-size:12px;font-weight:700;color:var(--green-dark);letter-spacing:0.5px}
+.sf input{border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;font-size:14px;font-family:inherit;outline:none;background:var(--green-bg);transition:border-color 0.15s}
+.sf input:focus{border-color:var(--green-mid);background:#fff}
+.btn-search{background:var(--green-dark);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;height:40px}
+.btn-search:hover{background:var(--green-mid)}
 
-  .search-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-  }
+/* List */
+.list-wrap{max-width:860px;margin:0 auto}
+.list-status{font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:0 4px}
+.list-table{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.list-head{display:grid;grid-template-columns:110px 90px 160px 90px 1fr;background:var(--green-dark);color:#fff;font-size:13px;font-weight:700}
+.list-head .th{padding:11px 14px;border-right:1px solid rgba(255,255,255,0.15)}
+.list-head .th:last-child{border-right:none}
+.list-row{display:grid;grid-template-columns:110px 90px 160px 90px 1fr;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.list-row:last-child{border-bottom:none}
+.list-row:nth-child(odd){background:#f8fbf8}
+.list-row:nth-child(even){background:#fff}
+.list-row:hover{background:var(--green-pale)}
+.list-row .td{padding:12px 14px;font-size:13px;border-right:1px solid var(--border);display:flex;align-items:center}
+.list-row .td:last-child{border-right:none}
+.shipped-dot{width:8px;height:8px;border-radius:50%;background:#4caf50;display:inline-block;margin-right:6px}
+.pending-dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;margin-right:6px}
+.detail-link{color:var(--green-mid);font-weight:700;font-size:13px;text-decoration:underline}
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .field label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--green-dark);
-    letter-spacing: 0.5px;
-  }
-  .field input {
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 15px;
-    font-family: inherit;
-    color: var(--text);
-    background: var(--green-bg);
-    transition: border-color 0.15s;
-    outline: none;
-  }
-  .field input:focus {
-    border-color: var(--green-mid);
-    background: var(--white);
-  }
-  .field input::placeholder { color: #bbb; }
+/* ── Page: Detail ── */
+#page-detail{display:none;padding:24px 20px}
+.detail-wrap{max-width:700px;margin:0 auto}
+.detail-box-title{font-size:28px;font-weight:800;color:var(--green-dark);margin-bottom:6px}
+.detail-client-tag{display:inline-block;background:var(--green-pale);color:var(--green-dark);border-radius:20px;padding:3px 14px;font-size:13px;font-weight:600;margin-bottom:20px}
 
-  .btn-row {
-    grid-column: 1 / -1;
-    display: flex;
-    gap: 12px;
-    margin-top: 4px;
-  }
-  .btn-search {
-    flex: 1;
-    background: var(--green-dark);
-    color: var(--white);
-    border: none;
-    border-radius: 8px;
-    padding: 13px;
-    font-size: 16px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: background 0.15s;
-  }
-  .btn-search:hover { background: var(--green-mid); }
-  .btn-clear {
-    background: var(--white);
-    color: var(--text-sub);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 13px 22px;
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .btn-clear:hover { border-color: var(--green-mid); color: var(--green-dark); }
+/* Shipment info */
+.ship-info{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:18px 22px;display:flex;gap:32px;margin-bottom:20px}
+.ship-field{display:flex;flex-direction:column;gap:3px}
+.ship-lbl{font-size:11px;color:var(--text-sub);font-weight:600;letter-spacing:0.5px}
+.ship-val{font-size:18px;font-weight:800;color:var(--green-dark)}
+.ship-val.empty{color:#ccc;font-weight:400;font-size:15px}
+.shipped-badge{display:inline-block;background:#4caf50;color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;margin-top:2px}
+.pending-badge{display:inline-block;background:#ddd;color:#888;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;margin-top:2px}
 
-  /* ── Status ── */
-  .status-bar {
-    max-width: 900px;
-    margin: 16px auto 0;
-    padding: 0 20px;
-    font-size: 13px;
-    color: var(--text-sub);
-    min-height: 20px;
-  }
-  .status-bar.error { color: #c0392b; }
+.detail-sec-title{font-size:14px;font-weight:700;color:var(--text-sub);margin-bottom:10px;letter-spacing:1px}
+.detail-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.detail-card .df{display:flex;flex-direction:column;gap:3px}
+.detail-card .df.full{grid-column:1/-1}
+.detail-card .dl{font-size:11px;color:var(--text-sub);font-weight:600;letter-spacing:0.5px}
+.detail-card .dv{font-size:16px;font-weight:700;color:var(--text)}
+.detail-card .dv.empty{color:#ccc;font-weight:400;font-size:14px}
 
-  /* ── Results ── */
-  .results {
-    max-width: 1200px;
-    margin: 20px auto 40px;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-  }
+/* Empty / Loading */
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-sub)}
+.empty-state .icon{font-size:44px;margin-bottom:10px}
+.loading-state{text-align:center;padding:40px 20px;color:var(--green-mid)}
+.spinner{width:32px;height:32px;border:3px solid var(--green-pale);border-top-color:var(--green-dark);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── Card ── */
-  .card {
-    background: var(--white);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-  }
-
-  .card-header {
-    background: var(--green-dark);
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .card-header .client {
-    color: var(--green-light);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 1px;
-  }
-  .card-header .box-id {
-    color: var(--white);
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
-  .card-header .shipped-badge {
-    background: #4caf50;
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-  }
-  .card-header .pending-badge {
-    background: rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.7);
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-
-  .card-body {
-    padding: 16px 18px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 16px;
-  }
-
-  .field-row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .field-row.full { grid-column: 1 / -1; }
-  .field-row .lbl {
-    font-size: 11px;
-    color: var(--text-sub);
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
-  .field-row .val {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .field-row .val.empty { color: #ccc; font-weight: 400; }
-
-  .card-footer {
-    border-top: 1px solid var(--border);
-    padding: 10px 18px;
-    display: flex;
-    gap: 16px;
-    background: var(--green-bg);
-  }
-  .card-footer .ship-item {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    flex: 1;
-  }
-  .card-footer .ship-lbl {
-    font-size: 11px;
-    color: var(--text-sub);
-  }
-  .card-footer .ship-val {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--green-dark);
-  }
-  .card-footer .ship-val.empty { color: #ccc; font-weight: 400; font-size: 13px; }
-
-  /* ── Empty / Loading ── */
-  .empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-sub);
-  }
-  .empty .icon { font-size: 48px; margin-bottom: 12px; }
-  .empty p { font-size: 15px; }
-
-  .loading {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--green-mid);
-  }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--green-pale);
-    border-top-color: var(--green-dark);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 600px) {
-    .search-grid { grid-template-columns: 1fr; }
-    header h1 { font-size: 18px; }
-  }
+@media(max-width:600px){
+  .client-grid{grid-template-columns:repeat(2,1fr)}
+  .search-bar{grid-template-columns:1fr 1fr;}.btn-search{grid-column:1/-1}
+  .list-head,.list-row{grid-template-columns:90px 70px 1fr 70px 80px}
+  .detail-card{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>🍶 W-82 出貨查詢</h1>
-  </div>
-  <span class="sub" id="result-count"></span>
+  <h1>🍶 W-82 酒查詢</h1>
+  <button class="back-btn" id="back-btn" onclick="goBack()">← 返回</button>
 </header>
 
-<div class="search-panel">
-  <div class="search-grid">
-    <div class="field">
-      <label>客戶編號</label>
-      <input type="text" id="f-client" placeholder="例：C-44" />
-    </div>
-    <div class="field">
-      <label>宅配編號</label>
-      <input type="text" id="f-tracking" placeholder="例：123456789012" />
-    </div>
-    <div class="field">
-      <label>回台日期</label>
-      <input type="date" id="f-date" />
-    </div>
-    <div class="field">
-      <label>回台箱號</label>
-      <input type="text" id="f-box" placeholder="例：723" />
-    </div>
-    <div class="btn-row">
+<!-- Page: Home -->
+<div id="page-home">
+  <div class="home-title">選擇客戶</div>
+  <div class="client-grid">
+    <div class="client-tile" onclick="openClient('C-44')"><div class="name">C-44</div></div>
+    <div class="client-tile" onclick="openClient('W-35')"><div class="name">W-35</div></div>
+    <div class="client-tile" onclick="openClient('D-13')"><div class="name">D-13</div></div>
+    <div class="client-tile" onclick="openClient('SL-2')"><div class="name">SL-2</div></div>
+    <div class="client-tile" onclick="openClient('C-46')"><div class="name">C-46</div></div>
+    <div class="client-tile" onclick="openClient('T-6')"><div class="name">T-6</div></div>
+    <div class="client-tile" onclick="openClient('H-86')"><div class="name">H-86</div></div>
+    <div class="client-tile other" onclick="openOther()"><div class="name">其他</div><div class="sub">自行輸入客戶編號</div></div>
+  </div>
+</div>
+
+<!-- Page: Client -->
+<div id="page-client">
+  <div class="client-header">
+    <div class="client-name-big" id="client-name-big"></div>
+    <div class="search-bar">
+      <div class="sf">
+        <label>宅配編號</label>
+        <input type="text" id="f-tracking" placeholder="輸入宅配編號..." />
+      </div>
+      <div class="sf">
+        <label>回台日期</label>
+        <input type="date" id="f-date" />
+      </div>
       <button class="btn-search" onclick="doSearch()">🔍 查詢</button>
-      <button class="btn-clear" onclick="clearAll()">✕ 清除</button>
+    </div>
+  </div>
+
+  <div class="list-wrap">
+    <div class="list-status" id="list-status"></div>
+    <div class="list-table" id="list-table">
+      <div class="list-head">
+        <div class="th">回台日期</div>
+        <div class="th">回台箱號</div>
+        <div class="th">宅配編號</div>
+        <div class="th">酒箱號</div>
+        <div class="th">詳細資訊</div>
+      </div>
+      <div id="list-body">
+        <div class="empty-state"><div class="icon">🔍</div><p>請輸入條件查詢</p></div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="status-bar" id="status"></div>
-
-<div class="results" id="results">
-  <div class="empty">
-    <div class="icon">🍶</div>
-    <p>輸入條件後按查詢</p>
+<!-- Page: Detail -->
+<div id="page-detail">
+  <div class="detail-wrap">
+    <div class="detail-box-title" id="detail-box-title"></div>
+    <div class="detail-client-tag" id="detail-client-tag"></div>
+    <div class="ship-info" id="ship-info"></div>
+    <div class="detail-sec-title">📦 箱內酒品詳細</div>
+    <div id="detail-cards"></div>
   </div>
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
+let currentClient = '';
+let currentPage = 'home';
+let allRows = [];
 
+// ── Navigation ──
+function showPage(page) {
+  document.getElementById('page-home').style.display   = page==='home'   ? 'block' : 'none';
+  document.getElementById('page-client').style.display = page==='client' ? 'block' : 'none';
+  document.getElementById('page-detail').style.display = page==='detail' ? 'block' : 'none';
+  document.getElementById('back-btn').style.display    = page!=='home'   ? 'block' : 'none';
+  currentPage = page;
+}
+
+function goBack() {
+  if (currentPage === 'detail') showPage('client');
+  else showPage('home');
+}
+
+function openClient(name) {
+  currentClient = name;
+  document.getElementById('client-name-big').textContent = name;
+  document.getElementById('f-tracking').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('list-status').textContent = '';
+  document.getElementById('list-body').innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>請輸入條件查詢</p></div>';
+  showPage('client');
+  doSearch(); // 預設顯示全部
+}
+
+function openOther() {
+  const name = prompt('請輸入客戶編號：');
+  if (name && name.trim()) openClient(name.trim());
+}
+
+// ── Search ──
 async function doSearch() {
-  const client   = $('f-client').value.trim();
-  const tracking = $('f-tracking').value.trim();
-  const date     = $('f-date').value;
-  const box_no   = $('f-box').value.trim();
-
-  if (!client && !tracking && !date && !box_no) {
-    $('status').textContent = '請至少輸入一個查詢條件';
-    $('status').className = 'status-bar error';
-    return;
-  }
-
-  $('results').innerHTML = '<div class="loading"><div class="spinner"></div><p>查詢中...</p></div>';
-  $('status').textContent = '';
-  $('status').className = 'status-bar';
-  $('result-count').textContent = '';
+  const tracking = document.getElementById('f-tracking').value.trim();
+  const date     = document.getElementById('f-date').value;
+  document.getElementById('list-body').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>查詢中...</p></div>';
+  document.getElementById('list-status').textContent = '';
 
   try {
     const res = await fetch('/api/notion', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client, tracking, date, box_no }),
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ client: currentClient, tracking, date }),
     });
     const data = await res.json();
-
-    if (data.error) {
-      $('status').textContent = '查詢失敗：' + data.error;
-      $('status').className = 'status-bar error';
-      $('results').innerHTML = '';
-      return;
-    }
-
-    const rows = data.rows || [];
-    $('result-count').textContent = rows.length ? `共 ${rows.length} 筆` : '';
-
-    if (!rows.length) {
-      $('results').innerHTML = '<div class="empty"><div class="icon">🔍</div><p>找不到符合的資料</p></div>';
-      return;
-    }
-
-    $('results').innerHTML = rows.map(r => renderCard(r)).join('');
-  } catch (e) {
-    $('status').textContent = '網路錯誤：' + e.message;
-    $('status').className = 'status-bar error';
+    if (data.error) { showListError(data.error); return; }
+    allRows = data.rows || [];
+    renderList(allRows);
+  } catch(e) {
+    showListError(e.message);
   }
 }
 
-function renderCard(r) {
-  const shipped = r.ship_box || r.ship_date;
-  const badge = shipped
-    ? `<span class="shipped-badge">✔ 已回台</span>`
-    : `<span class="pending-badge">⏳ 未回台</span>`;
-
-  const val = (v, fallback='—') => v ? `<span class="val">${v}</span>` : `<span class="val empty">${fallback}</span>`;
-
-  return `
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="client">${r.client || '—'}</div>
-        <div class="box-id"># ${r.box_id || '—'}</div>
-      </div>
-      ${badge}
-    </div>
-    <div class="card-body">
-      <div class="field-row">
-        <span class="lbl">宅配編號</span>
-        ${val(r.tracking)}
-      </div>
-      <div class="field-row">
-        <span class="lbl">宅配業者</span>
-        ${val(r.carrier)}
-      </div>
-      <div class="field-row">
-        <span class="lbl">酒商</span>
-        ${val(r.merchant)}
-      </div>
-      <div class="field-row">
-        <span class="lbl">酒標</span>
-        ${val(r.label)}
-      </div>
-      <div class="field-row">
-        <span class="lbl">容量</span>
-        ${val(r.capacity ? r.capacity + ' ml' : '')}
-      </div>
-      <div class="field-row">
-        <span class="lbl">數量</span>
-        ${val(r.qty ? r.qty + ' 瓶' : '')}
-      </div>
-      <div class="field-row">
-        <span class="lbl">酒盒</span>
-        ${val(r.box_type)}
-      </div>
-    </div>
-    <div class="card-footer">
-      <div class="ship-item">
-        <span class="ship-lbl">回台箱號</span>
-        <span class="ship-val ${r.ship_box ? '' : 'empty'}">${r.ship_box || '尚未回台'}</span>
-      </div>
-      <div class="ship-item">
-        <span class="ship-lbl">回台日期</span>
-        <span class="ship-val ${r.ship_date ? '' : 'empty'}">${r.ship_date || '—'}</span>
-      </div>
-    </div>
-  </div>`;
+function showListError(msg) {
+  document.getElementById('list-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${msg}</p></div>`;
 }
 
-function clearAll() {
-  ['f-client','f-tracking','f-date','f-box'].forEach(id => $(id).value = '');
-  $('results').innerHTML = '<div class="empty"><div class="icon">🍶</div><p>輸入條件後按查詢</p></div>';
-  $('status').textContent = '';
-  $('result-count').textContent = '';
+function renderList(rows) {
+  const status = document.getElementById('list-status');
+  const body   = document.getElementById('list-body');
+  if (!rows.length) {
+    status.textContent = '找不到符合的資料';
+    body.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>找不到符合的資料</p></div>';
+    return;
+  }
+  status.textContent = `共 ${rows.length} 筆`;
+
+  // Group by box_id to show unique boxes
+  const seen = new Set();
+  const unique = [];
+  for (const r of rows) {
+    if (!seen.has(r.box_id)) { seen.add(r.box_id); unique.push(r); }
+  }
+
+  body.innerHTML = unique.map((r, i) => {
+    const dot = (r.ship_box || r.ship_date)
+      ? `<span class="shipped-dot"></span>` : `<span class="pending-dot"></span>`;
+    return `<div class="list-row" onclick="openDetail('${r.box_id}')">
+      <div class="td">${r.ship_date || '—'}</div>
+      <div class="td">${r.ship_box || '—'}</div>
+      <div class="td">${r.tracking || '—'}</div>
+      <div class="td">${r.box_id || '—'}</div>
+      <div class="td"><span class="detail-link">${dot}查看</span></div>
+    </div>`;
+  }).join('');
 }
 
-// Enter 鍵觸發查詢
+// ── Detail ──
+function openDetail(boxId) {
+  const items = allRows.filter(r => r.box_id === boxId);
+  if (!items.length) return;
+  const first = items[0];
+
+  document.getElementById('detail-box-title').textContent = `# ${boxId}`;
+  document.getElementById('detail-client-tag').textContent = currentClient;
+
+  // Ship info
+  const shipped = first.ship_box || first.ship_date;
+  document.getElementById('ship-info').innerHTML = `
+    <div class="ship-field">
+      <span class="ship-lbl">回台箱號</span>
+      <span class="ship-val ${first.ship_box?'':'empty'}">${first.ship_box||'尚未回台'}</span>
+    </div>
+    <div class="ship-field">
+      <span class="ship-lbl">回台日期</span>
+      <span class="ship-val ${first.ship_date?'':'empty'}">${first.ship_date||'—'}</span>
+    </div>
+    <div class="ship-field">
+      <span class="ship-lbl">宅配編號</span>
+      <span class="ship-val">${first.tracking||'—'}</span>
+    </div>
+    <div class="ship-field">
+      <span class="ship-lbl">狀態</span>
+      ${shipped ? '<span class="shipped-badge">✔ 已回台</span>' : '<span class="pending-badge">⏳ 未回台</span>'}
+    </div>`;
+
+  // Item cards
+  document.getElementById('detail-cards').innerHTML = items.map((r,i) => `
+    <div class="detail-card">
+      <div class="df">
+        <span class="dl">酒商</span>
+        <span class="dv ${r.merchant?'':'empty'}">${r.merchant||'—'}</span>
+      </div>
+      <div class="df">
+        <span class="dl">酒標</span>
+        <span class="dv ${r.label?'':'empty'}">${r.label||'—'}</span>
+      </div>
+      <div class="df">
+        <span class="dl">容量</span>
+        <span class="dv ${r.capacity?'':'empty'}">${r.capacity ? r.capacity+'ml' : '—'}</span>
+      </div>
+      <div class="df">
+        <span class="dl">數量</span>
+        <span class="dv ${r.qty?'':'empty'}">${r.qty ? r.qty+'瓶' : '—'}</span>
+      </div>
+      <div class="df">
+        <span class="dl">酒盒</span>
+        <span class="dv ${r.box_type?'':'empty'}">${r.box_type||'—'}</span>
+      </div>
+      <div class="df">
+        <span class="dl">宅配業者</span>
+        <span class="dv ${r.carrier?'':'empty'}">${r.carrier||'—'}</span>
+      </div>
+    </div>`).join('');
+
+  showPage('detail');
+}
+
+// Enter key
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch();
+  if (e.key==='Enter' && currentPage==='client') doSearch();
 });
+
+showPage('home');
 </script>
 </body>
 </html>
