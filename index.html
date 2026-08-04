@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W-82 出貨查詢</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-dark:  #3a5438;
+    --green-mid:   #5a7a56;
+    --green-light: #8aaa86;
+    --green-pale:  #ddeedd;
+    --green-bg:    #f2f5f2;
+    --gold:        #8a7248;
+    --text:        #222;
+    --text-sub:    #666;
+    --white:       #fff;
+    --border:      #c8d8c4;
+    --radius:      12px;
+    --shadow:      0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+    background: var(--green-bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--green-dark);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  header h1 {
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+  header span.sub {
+    color: var(--green-light);
+    font-size: 14px;
+    margin-left: 4px;
+  }
+
+  /* ── Search Panel ── */
+  .search-panel {
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+  }
+
+  .search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green-dark);
+    letter-spacing: 0.5px;
+  }
+  .field input {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--green-bg);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .field input:focus {
+    border-color: var(--green-mid);
+    background: var(--white);
+  }
+  .field input::placeholder { color: #bbb; }
+
+  .btn-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .btn-search {
+    flex: 1;
+    background: var(--green-dark);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background 0.15s;
+  }
+  .btn-search:hover { background: var(--green-mid); }
+  .btn-clear {
+    background: var(--white);
+    color: var(--text-sub);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 22px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .btn-clear:hover { border-color: var(--green-mid); color: var(--green-dark); }
+
+  /* ── Status ── */
+  .status-bar {
+    max-width: 900px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-size: 13px;
+    color: var(--text-sub);
+    min-height: 20px;
+  }
+  .status-bar.error { color: #c0392b; }
+
+  /* ── Results ── */
+  .results {
+    max-width: 1200px;
+    margin: 20px auto 40px;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+
+  .card-header {
+    background: var(--green-dark);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-header .client {
+    color: var(--green-light);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+  .card-header .box-id {
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .card-header .shipped-badge {
+    background: #4caf50;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .card-header .pending-badge {
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .card-body {
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+  }
+
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .field-row.full { grid-column: 1 / -1; }
+  .field-row .lbl {
+    font-size: 11px;
+    color: var(--text-sub);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .field-row .val {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .field-row .val.empty { color: #ccc; font-weight: 400; }
+
+  .card-footer {
+    border-top: 1px solid var(--border);
+    padding: 10px 18px;
+    display: flex;
+    gap: 16px;
+    background: var(--green-bg);
+  }
+  .card-footer .ship-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+  }
+  .card-footer .ship-lbl {
+    font-size: 11px;
+    color: var(--text-sub);
+  }
+  .card-footer .ship-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green-dark);
+  }
+  .card-footer .ship-val.empty { color: #ccc; font-weight: 400; font-size: 13px; }
+
+  /* ── Empty / Loading ── */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-sub);
+  }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; }
+
+  .loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--green-mid);
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--green-pale);
+    border-top-color: var(--green-dark);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) {
+    .search-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🍶 W-82 出貨查詢</h1>
+  </div>
+  <span class="sub" id="result-count"></span>
+</header>
+
+<div class="search-panel">
+  <div class="search-grid">
+    <div class="field">
+      <label>客戶編號</label>
+      <input type="text" id="f-client" placeholder="例：C-44" />
+    </div>
+    <div class="field">
+      <label>宅配編號</label>
+      <input type="text" id="f-tracking" placeholder="例：123456789012" />
+    </div>
+    <div class="field">
+      <label>回台日期</label>
+      <input type="date" id="f-date" />
+    </div>
+    <div class="field">
+      <label>回台箱號</label>
+      <input type="text" id="f-box" placeholder="例：723" />
+    </div>
+    <div class="btn-row">
+      <button class="btn-search" onclick="doSearch()">🔍 查詢</button>
+      <button class="btn-clear" onclick="clearAll()">✕ 清除</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar" id="status"></div>
+
+<div class="results" id="results">
+  <div class="empty">
+    <div class="icon">🍶</div>
+    <p>輸入條件後按查詢</p>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+async function doSearch() {
+  const client   = $('f-client').value.trim();
+  const tracking = $('f-tracking').value.trim();
+  const date     = $('f-date').value;
+  const box_no   = $('f-box').value.trim();
+
+  if (!client && !tracking && !date && !box_no) {
+    $('status').textContent = '請至少輸入一個查詢條件';
+    $('status').className = 'status-bar error';
+    return;
+  }
+
+  $('results').innerHTML = '<div class="loading"><div class="spinner"></div><p>查詢中...</p></div>';
+  $('status').textContent = '';
+  $('status').className = 'status-bar';
+  $('result-count').textContent = '';
+
+  try {
+    const res = await fetch('/api/notion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client, tracking, date, box_no }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      $('status').textContent = '查詢失敗：' + data.error;
+      $('status').className = 'status-bar error';
+      $('results').innerHTML = '';
+      return;
+    }
+
+    const rows = data.rows || [];
+    $('result-count').textContent = rows.length ? `共 ${rows.length} 筆` : '';
+
+    if (!rows.length) {
+      $('results').innerHTML = '<div class="empty"><div class="icon">🔍</div><p>找不到符合的資料</p></div>';
+      return;
+    }
+
+    $('results').innerHTML = rows.map(r => renderCard(r)).join('');
+  } catch (e) {
+    $('status').textContent = '網路錯誤：' + e.message;
+    $('status').className = 'status-bar error';
+  }
+}
+
+function renderCard(r) {
+  const shipped = r.ship_box || r.ship_date;
+  const badge = shipped
+    ? `<span class="shipped-badge">✔ 已回台</span>`
+    : `<span class="pending-badge">⏳ 未回台</span>`;
+
+  const val = (v, fallback='—') => v ? `<span class="val">${v}</span>` : `<span class="val empty">${fallback}</span>`;
+
+  return `
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="client">${r.client || '—'}</div>
+        <div class="box-id"># ${r.box_id || '—'}</div>
+      </div>
+      ${badge}
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <span class="lbl">宅配編號</span>
+        ${val(r.tracking)}
+      </div>
+      <div class="field-row">
+        <span class="lbl">宅配業者</span>
+        ${val(r.carrier)}
+      </div>
+      <div class="field-row">
+        <span class="lbl">酒商</span>
+        ${val(r.merchant)}
+      </div>
+      <div class="field-row">
+        <span class="lbl">酒標</span>
+        ${val(r.label)}
+      </div>
+      <div class="field-row">
+        <span class="lbl">容量</span>
+        ${val(r.capacity ? r.capacity + ' ml' : '')}
+      </div>
+      <div class="field-row">
+        <span class="lbl">數量</span>
+        ${val(r.qty ? r.qty + ' 瓶' : '')}
+      </div>
+      <div class="field-row">
+        <span class="lbl">酒盒</span>
+        ${val(r.box_type)}
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="ship-item">
+        <span class="ship-lbl">回台箱號</span>
+        <span class="ship-val ${r.ship_box ? '' : 'empty'}">${r.ship_box || '尚未回台'}</span>
+      </div>
+      <div class="ship-item">
+        <span class="ship-lbl">回台日期</span>
+        <span class="ship-val ${r.ship_date ? '' : 'empty'}">${r.ship_date || '—'}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function clearAll() {
+  ['f-client','f-tracking','f-date','f-box'].forEach(id => $(id).value = '');
+  $('results').innerHTML = '<div class="empty"><div class="icon">🍶</div><p>輸入條件後按查詢</p></div>';
+  $('status').textContent = '';
+  $('result-count').textContent = '';
+}
+
+// Enter 鍵觸發查詢
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+</script>
+</body>
+</html>
