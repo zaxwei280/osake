@@ -239,17 +239,11 @@ function renderList(rows) {
   }
   status.textContent = `共 ${rows.length} 筆`;
 
-  // Group by box_id to show unique boxes
-  const seen = new Set();
-  const unique = [];
-  for (const r of rows) {
-    if (!seen.has(r.box_id)) { seen.add(r.box_id); unique.push(r); }
-  }
-
-  body.innerHTML = unique.map((r, i) => {
+  body.innerHTML = rows.map((r, i) => {
     const dot = (r.ship_box || r.ship_date)
       ? `<span class="shipped-dot"></span>` : `<span class="pending-dot"></span>`;
-    return `<div class="list-row" onclick="openDetail('${r.box_id}')">
+    const key = encodeURIComponent(r.box_id + '||' + r.tracking);
+    return `<div class="list-row" onclick="openDetail('${key}')">
       <div class="td">${r.ship_date || '—'}</div>
       <div class="td">${r.ship_box || '—'}</div>
       <div class="td">${r.tracking || '—'}</div>
@@ -260,8 +254,9 @@ function renderList(rows) {
 }
 
 // ── Detail ──
-function openDetail(boxId) {
-  const items = allRows.filter(r => r.box_id === boxId);
+function openDetail(key) {
+  const [boxId, tracking] = decodeURIComponent(key).split('||');
+  const items = allRows.filter(r => r.box_id === boxId && r.tracking === tracking);
   if (!items.length) return;
   const first = items[0];
 
