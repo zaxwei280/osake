@@ -204,6 +204,8 @@ function openOther() {
 
 async function doSearch() {
   const tracking = document.getElementById('f-tracking').value.trim();
+  const isInitial = !tracking && allRows.length === 0;
+
   document.getElementById('list-body').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>查詢中...</p></div>';
   document.getElementById('list-status').textContent = '';
 
@@ -216,7 +218,7 @@ async function doSearch() {
     const data = await res.json();
     if (data.error) { showError(data.error); return; }
     allRows = data.rows || [];
-    renderList();
+    renderList(!!tracking);  // 有輸入搜尋條件才顯示摘要
   } catch(e) {
     showError(e.message);
   }
@@ -226,7 +228,7 @@ function showError(msg) {
   document.getElementById('list-body').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${msg}</p></div>`;
 }
 
-function renderList() {
+function renderList(showSummary = false) {
   const body = document.getElementById('list-body');
   const status = document.getElementById('list-status');
 
@@ -236,7 +238,6 @@ function renderList() {
     return;
   }
 
-  // 依宅配編號分組，取每組最新日期和回台箱號
   const grouped = {};
   for (const r of allRows) {
     const key = r.tracking || '(無宅配編號)';
@@ -254,21 +255,30 @@ function renderList() {
     const dates = [...g.dates].sort().reverse()[0] || '—';
     const boxes = [...g.ship_boxes].join('、') || '—';
 
-    // 計算摘要：容量/數量、酒盒、酒箱號
-    const gRows = allRows.filter(r => r.tracking === g.tracking);
-    const capMap = {};
-    let totalBox = 0;
-    const boxIds = new Set();
-    for (const r of gRows) {
-      const cap = r.capacity ? r.capacity + 'ml' : '未知';
-      const qty = parseInt(r.qty) || 0;
-      capMap[cap] = (capMap[cap] || 0) + qty;
-      totalBox += parseInt(r.box_type) || 0;
-      if (r.box_id) boxIds.add(r.box_id);
+    let summaryHtml = '';
+    if (showSummary) {
+      const gRows = allRows.filter(r => r.tracking === g.tracking);
+      const capMap = {};
+      let totalBox = 0;
+      const boxIds = new Set();
+      for (const r of gRows) {
+        const cap = r.capacity ? r.capacity + 'ml' : '未知';
+        const qty = parseInt(r.qty) || 0;
+        capMap[cap] = (capMap[cap] || 0) + qty;
+        totalBox += parseInt(r.box_type) || 0;
+        if (r.box_id) boxIds.add(r.box_id);
+      }
+      const capStr = Object.entries(capMap)
+        .filter(([k]) => k !== '未知')
+        .sort((a,b) => parseInt(a[0]) - parseInt(b[0]))
+        .map(([cap, qty]) => `<span class="sum-tag">${cap} × ${qty}瓶</span>`).join('');
+      const boxIdStr = [...boxIds].map(id => `<span class="sum-tag sum-tag-blue">${id}</span>`).join('');
+      summaryHtml = `<div class="list-summary">
+        <div class="sum-group"><span class="sum-lbl">容量／數量</span>${capStr || '—'}</div>
+        <div class="sum-group"><span class="sum-lbl">酒盒</span><span class="sum-tag">${totalBox} 個</span></div>
+        <div class="sum-group"><span class="sum-lbl">酒箱號</span>${boxIdStr || '—'}</div>
+      </div>`;
     }
-    const capStr = Object.entries(capMap).sort((a,b)=>parseInt(a[0])-parseInt(b[0]))
-      .map(([cap, qty]) => `<span class="sum-tag">${cap} × ${qty}瓶</span>`).join('');
-    const boxIdStr = [...boxIds].map(id => `<span class="sum-tag sum-tag-blue">${id}</span>`).join('');
 
     return `<div class="list-row-wrap" onclick="openTracking('${encodeURIComponent(g.tracking)}')">
       <div class="list-row">
@@ -276,11 +286,7 @@ function renderList() {
         <div class="td"><span class="tracking-link">${dot}${g.tracking}</span></div>
         <div class="td">${boxes}</div>
       </div>
-      <div class="list-summary">
-        <div class="sum-group"><span class="sum-lbl">容量／數量</span>${capStr || '—'}</div>
-        <div class="sum-group"><span class="sum-lbl">酒盒</span><span class="sum-tag">${totalBox} 個</span></div>
-        <div class="sum-group"><span class="sum-lbl">酒箱號</span>${boxIdStr || '—'}</div>
-      </div>
+      ${summaryHtml}
     </div>`;
   }).join('');
 }
