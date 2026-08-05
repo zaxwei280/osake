@@ -56,6 +56,7 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 .sum-lbl{font-size:11px;color:var(--text-sub);font-weight:700;white-space:nowrap}
 .sum-tag{background:#e8f0e8;color:var(--green-dark);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
 .sum-tag-blue{background:#e8eef8;color:#3a4a8a}
+.sum-tag-red{background:#fde8e8;color:#c0392b;font-weight:800}
 .list-head{display:grid !important;grid-template-columns:140px 1fr 130px;background:var(--green-dark);color:#fff;font-size:15px;font-weight:700;width:100%}
 .list-head .th{padding:14px 16px;border-right:1px solid rgba(255,255,255,0.15)}
 .list-head .th:last-child{border-right:none}
@@ -249,6 +250,12 @@ function renderList(showSummary = false) {
   }
 
   const groups = Object.values(grouped);
+  // 依最新日期降序排列
+  groups.sort((a, b) => {
+    const da = [...a.dates].sort().reverse()[0] || '';
+    const db = [...b.dates].sort().reverse()[0] || '';
+    return db.localeCompare(da);
+  });
   status.textContent = `共 ${groups.length} 筆宅配`;
 
   body.innerHTML = groups.map(g => {
@@ -269,12 +276,14 @@ function renderList(showSummary = false) {
         totalBox += parseInt(r.box_type) || 0;
         if (r.box_id) boxIds.add(r.box_id);
       }
+      const totalQty = Object.values(capMap).reduce((a,b)=>a+b,0);
       const capStr = Object.entries(capMap)
         .filter(([k]) => k !== '未知')
         .sort((a,b) => parseInt(a[0]) - parseInt(b[0]))
         .map(([cap, qty]) => `<span class="sum-tag">${cap} × ${qty}瓶</span>`).join('');
       const boxIdStr = [...boxIds].map(id => `<span class="sum-tag sum-tag-blue">${id}</span>`).join('');
       summaryHtml = `<div class="list-summary">
+        <div class="sum-group"><span class="sum-lbl">總瓶數</span><span class="sum-tag sum-tag-red">${totalQty} 瓶</span></div>
         <div class="sum-group"><span class="sum-lbl">容量／數量</span>${capStr || '—'}</div>
         <div class="sum-group"><span class="sum-lbl">酒盒</span><span class="sum-tag">${totalBox} 個</span></div>
         <div class="sum-group"><span class="sum-lbl">酒箱號</span>${boxIdStr || '—'}</div>
