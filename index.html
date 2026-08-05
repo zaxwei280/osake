@@ -255,22 +255,44 @@ function renderList() {
   }).join('');
 }
 
-function openTracking(encodedTracking) {
+async function openTracking(encodedTracking) {
   const tracking = decodeURIComponent(encodedTracking);
-
-  // 找出這個宅配編號相關的所有酒箱號
-  const relatedBoxIds = new Set(
-    allRows.filter(r => r.tracking === tracking).map(r => r.box_id)
-  );
-  // 再從全部資料中取出這些酒箱號的所有資料（包含其他宅配編號）
-  const items = allRows.filter(r => relatedBoxIds.has(r.box_id));
 
   document.getElementById('detail-client').textContent = currentClient;
   document.getElementById('detail-tracking').textContent = tracking;
+  document.getElementById('box-cards').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>載入中...</p></div>';
+  showPage('tracking');
+
+  // Step 1: 找出這個宅配編號的所有酒箱號
+  const relatedBoxIds = [...new Set(
+    allRows.filter(r => r.tracking === tracking).map(r => r.box_id).filter(Boolean)
+  )];
+
+  // Step 2: 對每個酒箱號去 Notion 補查完整資料
+  let fullItems = [];
+  try {
+    for (const boxId of relatedBoxIds) {
+      const res = await fetch('/api/notion', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ client: currentClient, box_id: boxId }),
+      });
+      const data = await res.json();
+      if (data.rows) fullItems = fullItems.concat(data.rows);
+    }
+  } catch(e) {
+    document.getElementById('box-cards').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
+    return;
+  }
+
+  if (!fullItems.length) {
+    document.getElementById('box-cards').innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>找不到資料</p></div>';
+    return;
+  }
 
   // 依酒箱編號分組
   const byBox = {};
-  for (const r of items) {
+  for (const r of fullItems) {
     const boxId = r.box_id || '(未知)';
     if (!byBox[boxId]) byBox[boxId] = [];
     byBox[boxId].push(r);
@@ -304,25 +326,15 @@ function openTracking(encodedTracking) {
         ${badge}
       </div>
       <div class="box-card-ship">
-        <div class="ship-f">
-          <span class="ship-fl">回台日期</span>
-          <span class="ship-fv ${first.ship_date?'':'empty'}">${first.ship_date||'—'}</span>
-        </div>
-        <div class="ship-f">
-          <span class="ship-fl">回台箱號</span>
-          <span class="ship-fv ${first.ship_box?'':'empty'}">${first.ship_box||'—'}</span>
-        </div>
-        <div class="ship-f">
-          <span class="ship-fl">酒箱號</span>
-          <span class="ship-fv">${boxId}</span>
-        </div>
+        <div class="ship-f"><span class="ship-fl">回台日期</span><span class="ship-fv ${first.ship_date?'':'empty'}">${first.ship_date||'—'}</span></div>
+        <div class="ship-f"><span class="ship-fl">回台箱號</span><span class="ship-fv ${first.ship_box?'':'empty'}">${first.ship_box||'—'}</span></div>
+        <div class="ship-f"><span class="ship-fl">酒箱號</span><span class="ship-fv">${boxId}</span></div>
       </div>
       ${details}
     </div>`;
   }).join('');
 
-  document.getElementById('box-cards').innerHTML = cards || '<div class="empty-state"><div class="icon">📦</div><p>找不到資料</p></div>';
-  showPage('tracking');
+  document.getElementById('box-cards').innerHTML = cards;
 }
 
 document.addEventListener('keydown', e => {

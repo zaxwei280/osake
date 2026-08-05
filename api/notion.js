@@ -21,7 +21,7 @@ export default async function handler(req) {
   };
 
   const body = await req.json().catch(() => ({}));
-  const { client, tracking, date, box_no, debug } = body;
+  const { client, tracking, date, box_no, box_id, debug } = body;
 
   // Debug mode
   if (debug) {
@@ -53,7 +53,8 @@ export default async function handler(req) {
   if (client)   filters.push({ property: "客戶編號", rich_text: { contains: client } });
   if (tracking) filters.push({ property: "宅配編號", rich_text: { contains: tracking } });
   if (box_no)   filters.push({ property: "回台箱號", rich_text: { contains: box_no } });
-  if (date)     filters.push({ property: "回台日期", date:      { equals: date } });
+  if (box_id)   filters.push({ property: "酒箱編號", rich_text: { equals: box_id } });
+  if (date)     filters.push({ property: "回台日期", rich_text: { contains: date } });
 
   const query = {
     page_size: 100,
