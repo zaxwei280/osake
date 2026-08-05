@@ -286,7 +286,7 @@ function openTracking(encodedTracking) {
     const details = rows.map(r => `
       <div class="box-card-detail">
         <div class="df"><span class="dl">宅配業者</span><span class="dv ${r.carrier?'':'empty'}">${r.carrier||'—'}</span></div>
-        <div class="df"><span class="dl">宅配編號</span><span class="dv tracking-red ${r.tracking?'':'empty'}">${r.tracking||'—'}</span></div>
+        <div class="df"><span class="dl">宅配編號</span><span class="dv ${r.tracking===tracking?'tracking-red':''} ${r.tracking?'':'empty'}">${r.tracking||'—'}</span></div>
         <div class="df"><span class="dl">容量</span><span class="dv ${r.capacity?'':'empty'}">${r.capacity ? r.capacity+'ml' : '—'}</span></div>
         <div class="df"><span class="dl">數量</span><span class="dv ${r.qty?'':'empty'}">${r.qty ? r.qty+'瓶' : '—'}</span></div>
         <div class="df"><span class="dl">酒商</span><span class="dv ${r.merchant?'':'empty'}">${r.merchant||'—'}</span></div>
