@@ -45,14 +45,20 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 /* List */
 .list-status{font-size:13px;color:var(--text-sub);margin-bottom:8px;padding:0 2px}
 .list-table{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-.list-head{display:grid;grid-template-columns:140px 1fr 130px;background:var(--green-dark);color:#fff;font-size:15px;font-weight:700}
+.list-row-wrap{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.list-row-wrap:last-child{border-bottom:none}
+.list-row-wrap:nth-child(odd) .list-row,.list-row-wrap:nth-child(odd) .list-summary{background:#f8fbf8}
+.list-row-wrap:nth-child(even) .list-row,.list-row-wrap:nth-child(even) .list-summary{background:#fff}
+.list-row-wrap:hover .list-row,.list-row-wrap:hover .list-summary{background:var(--green-pale)}
+.list-row{display:grid;grid-template-columns:140px 1fr 130px;border-bottom:1px dashed var(--border)}
+.list-summary{padding:10px 16px;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.sum-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sum-lbl{font-size:11px;color:var(--text-sub);font-weight:700;white-space:nowrap}
+.sum-tag{background:#e8f0e8;color:var(--green-dark);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
+.sum-tag-blue{background:#e8eef8;color:#3a4a8a}
 .list-head .th{padding:14px 16px;border-right:1px solid rgba(255,255,255,0.15)}
 .list-head .th:last-child{border-right:none}
 .list-row{display:grid;grid-template-columns:140px 1fr 130px;border-bottom:1px solid var(--border);transition:background 0.1s}
-.list-row:last-child{border-bottom:none}
-.list-row:nth-child(odd){background:#f8fbf8}
-.list-row:nth-child(even){background:#fff}
-.list-row:hover{background:var(--green-pale)}
 .list-row .td{padding:16px 16px;font-size:16px;border-right:1px solid var(--border);display:flex;align-items:center}
 .list-row .td:last-child{border-right:none}
 .tracking-link{color:var(--green-dark);font-weight:700;font-size:16px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
@@ -247,10 +253,34 @@ function renderList() {
     const dot = g.shipped ? '<span class="dot-shipped"></span>' : '<span class="dot-pending"></span>';
     const dates = [...g.dates].sort().reverse()[0] || '—';
     const boxes = [...g.ship_boxes].join('、') || '—';
-    return `<div class="list-row" onclick="openTracking('${encodeURIComponent(g.tracking)}')">
-      <div class="td">${dates}</div>
-      <div class="td"><span class="tracking-link">${dot}${g.tracking}</span></div>
-      <div class="td">${boxes}</div>
+
+    // 計算摘要：容量/數量、酒盒、酒箱號
+    const gRows = allRows.filter(r => r.tracking === g.tracking);
+    const capMap = {};
+    let totalBox = 0;
+    const boxIds = new Set();
+    for (const r of gRows) {
+      const cap = r.capacity ? r.capacity + 'ml' : '未知';
+      const qty = parseInt(r.qty) || 0;
+      capMap[cap] = (capMap[cap] || 0) + qty;
+      totalBox += parseInt(r.box_type) || 0;
+      if (r.box_id) boxIds.add(r.box_id);
+    }
+    const capStr = Object.entries(capMap).sort((a,b)=>parseInt(a[0])-parseInt(b[0]))
+      .map(([cap, qty]) => `<span class="sum-tag">${cap} × ${qty}瓶</span>`).join('');
+    const boxIdStr = [...boxIds].map(id => `<span class="sum-tag sum-tag-blue">${id}</span>`).join('');
+
+    return `<div class="list-row-wrap" onclick="openTracking('${encodeURIComponent(g.tracking)}')">
+      <div class="list-row">
+        <div class="td">${dates}</div>
+        <div class="td"><span class="tracking-link">${dot}${g.tracking}</span></div>
+        <div class="td">${boxes}</div>
+      </div>
+      <div class="list-summary">
+        <div class="sum-group"><span class="sum-lbl">容量／數量</span>${capStr || '—'}</div>
+        <div class="sum-group"><span class="sum-lbl">酒盒</span><span class="sum-tag">${totalBox} 個</span></div>
+        <div class="sum-group"><span class="sum-lbl">酒箱號</span>${boxIdStr || '—'}</div>
+      </div>
     </div>`;
   }).join('');
 }
