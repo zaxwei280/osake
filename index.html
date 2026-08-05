@@ -74,7 +74,7 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 .tracking-number{font-size:26px;font-weight:800;color:var(--green-dark);margin-bottom:4px;letter-spacing:1px}
 
 /* Box cards */
-.box-cards{display:flex;flex-direction:column;gap:16px}
+.box-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
 .box-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
 .box-card-header{background:var(--green-dark);padding:22px 24px;display:flex;align-items:center;gap:20px}
 .box-card-header .ship-box-label{color:rgba(255,255,255,0.6);font-size:15px;margin-bottom:4px}
