@@ -69,8 +69,10 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 .box-cards{display:flex;flex-direction:column;gap:16px}
 .box-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
 .box-card-header{background:var(--green-dark);padding:16px 20px;display:flex;align-items:center;gap:16px}
-.box-card-header .ship-box-num{color:var(--green-light);font-size:13px}
-.box-card-header .box-id-num{color:#fff;font-size:22px;font-weight:800}
+.box-card-header .ship-box-label{color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:2px}
+.box-card-header .ship-box-big{color:#fff;font-size:28px;font-weight:800;letter-spacing:2px;margin-bottom:2px}
+.box-card-header .box-id-num{color:rgba(255,255,255,0.7);font-size:14px}
+.tracking-red{color:#c0392b !important;font-weight:700}
 .box-card-header .status-badge{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
 .badge-shipped{background:#4caf50;color:#fff}
 .badge-pending{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
@@ -255,7 +257,13 @@ function renderList() {
 
 function openTracking(encodedTracking) {
   const tracking = decodeURIComponent(encodedTracking);
-  const items = allRows.filter(r => r.tracking === tracking);
+
+  // 找出這個宅配編號相關的所有酒箱號
+  const relatedBoxIds = new Set(
+    allRows.filter(r => r.tracking === tracking).map(r => r.box_id)
+  );
+  // 再從全部資料中取出這些酒箱號的所有資料（包含其他宅配編號）
+  const items = allRows.filter(r => relatedBoxIds.has(r.box_id));
 
   document.getElementById('detail-client').textContent = currentClient;
   document.getElementById('detail-tracking').textContent = tracking;
@@ -278,7 +286,7 @@ function openTracking(encodedTracking) {
     const details = rows.map(r => `
       <div class="box-card-detail">
         <div class="df"><span class="dl">宅配業者</span><span class="dv ${r.carrier?'':'empty'}">${r.carrier||'—'}</span></div>
-        <div class="df"><span class="dl">宅配編號</span><span class="dv ${r.tracking?'':'empty'}">${r.tracking||'—'}</span></div>
+        <div class="df"><span class="dl">宅配編號</span><span class="dv tracking-red ${r.tracking?'':'empty'}">${r.tracking||'—'}</span></div>
         <div class="df"><span class="dl">容量</span><span class="dv ${r.capacity?'':'empty'}">${r.capacity ? r.capacity+'ml' : '—'}</span></div>
         <div class="df"><span class="dl">數量</span><span class="dv ${r.qty?'':'empty'}">${r.qty ? r.qty+'瓶' : '—'}</span></div>
         <div class="df"><span class="dl">酒商</span><span class="dv ${r.merchant?'':'empty'}">${r.merchant||'—'}</span></div>
@@ -289,7 +297,8 @@ function openTracking(encodedTracking) {
     return `<div class="box-card">
       <div class="box-card-header">
         <div>
-          <div class="ship-box-num">回台箱號：${first.ship_box || '—'}</div>
+          <div class="ship-box-label">回台箱號</div>
+          <div class="ship-box-big">${first.ship_box || '—'}</div>
           <div class="box-id-num"># ${boxId}</div>
         </div>
         ${badge}
