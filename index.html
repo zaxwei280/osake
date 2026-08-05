@@ -44,18 +44,19 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 
 /* List */
 .list-status{font-size:13px;color:var(--text-sub);margin-bottom:8px;padding:0 2px}
-.list-table{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-.list-row-wrap{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.list-table{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;display:block;width:100%}
+.list-row-wrap{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;display:block;width:100%}
 .list-row-wrap:last-child{border-bottom:none}
 .list-row-wrap:nth-child(odd){background:#f8fbf8}
 .list-row-wrap:nth-child(even){background:#fff}
 .list-row-wrap:hover{background:var(--green-pale)}
-.list-row{display:grid;grid-template-columns:140px 1fr 130px}
+.list-row{display:grid !important;grid-template-columns:140px 1fr 130px;width:100%}
 .list-summary{padding:8px 16px 12px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--border)}
 .sum-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .sum-lbl{font-size:11px;color:var(--text-sub);font-weight:700;white-space:nowrap}
 .sum-tag{background:#e8f0e8;color:var(--green-dark);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
 .sum-tag-blue{background:#e8eef8;color:#3a4a8a}
+.list-head{display:grid !important;grid-template-columns:140px 1fr 130px;background:var(--green-dark);color:#fff;font-size:15px;font-weight:700;width:100%}
 .list-head .th{padding:14px 16px;border-right:1px solid rgba(255,255,255,0.15)}
 .list-head .th:last-child{border-right:none}
 
