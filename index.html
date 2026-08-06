@@ -81,6 +81,10 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 .box-card-header .ship-box-big{color:#fff;font-size:38px;font-weight:800;letter-spacing:2px;margin-bottom:4px}
 .box-card-header .box-id-num{color:rgba(255,255,255,0.7);font-size:18px}
 .tracking-red{color:#c0392b !important;font-weight:700}
+.header-tracking-list{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.header-tracking{color:rgba(255,255,255,0.85);font-size:14px;display:flex;align-items:center;gap:10px}
+.header-tracking-red{color:#ffaaaa !important;font-weight:700}
+.header-qty{background:rgba(255,255,255,0.2);border-radius:10px;padding:1px 8px;font-size:13px;font-weight:700}
 .box-card-header .status-badge{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
 .badge-shipped{background:#4caf50;color:#fff}
 .badge-pending{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
@@ -322,7 +326,7 @@ async function openTracking(encodedTracking) {
     allRows.filter(r => r.tracking === tracking).map(r => r.box_id).filter(Boolean)
   )];
 
-  // Step 2: 對每個酒箱號去 Notion 補查完整資料
+  // Step 2: 對每個酒箱號去 Notion 補查完整資料（不限宅配編號）
   let fullItems = [];
   try {
     for (const boxId of relatedBoxIds) {
@@ -334,6 +338,14 @@ async function openTracking(encodedTracking) {
       const data = await res.json();
       if (data.rows) fullItems = fullItems.concat(data.rows);
     }
+    // 去除重複（同一酒箱+宅配+酒標組合）
+    const seen = new Set();
+    fullItems = fullItems.filter(r => {
+      const key = `${r.box_id}|${r.tracking}|${r.label}|${r.capacity}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   } catch(e) {
     document.getElementById('box-cards').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${e.message}</p></div>`;
     return;
@@ -370,12 +382,22 @@ async function openTracking(encodedTracking) {
         <div class="df"><span class="dl">酒盒</span><span class="dv ${r.box_type?'':'empty'}">${r.box_type||'—'}</span></div>
       </div>`).join('<hr style="border:none;border-top:1px solid var(--border);margin:0">');
 
+    // 統計各宅配編號的瓶數
+    const trackingQty = {};
+    for (const r of rows) {
+      const t = r.tracking || '未知';
+      trackingQty[t] = (trackingQty[t] || 0) + (parseInt(r.qty) || 0);
+    }
+    const trackingSummary = Object.entries(trackingQty)
+      .map(([t, q]) => `<div class="header-tracking ${t===tracking?'header-tracking-red':''}">${t}<span class="header-qty">${q}瓶</span></div>`)
+      .join('');
+
     return `<div class="box-card">
       <div class="box-card-header">
-        <div>
+        <div style="flex:1">
           <div class="ship-box-label">回台箱號</div>
           <div class="ship-box-big">${first.ship_box || '—'}</div>
-          <div class="box-id-num"># ${boxId}</div>
+          <div class="header-tracking-list">${trackingSummary}</div>
         </div>
         ${badge}
       </div>
