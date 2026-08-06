@@ -74,6 +74,13 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 .tracking-number{font-size:26px;font-weight:800;color:var(--green-dark);margin-bottom:4px;letter-spacing:1px}
 
 /* Box cards */
+.tracking-summary{display:flex;gap:0;background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);margin:0 24px 16px;overflow:hidden}
+.ts-item{flex:1;padding:16px 20px;text-align:center;border-right:1px solid var(--border)}
+.ts-item:last-child{border-right:none}
+.ts-lbl{display:block;font-size:12px;color:var(--text-sub);font-weight:600;margin-bottom:6px;letter-spacing:0.5px}
+.ts-val{font-size:24px;font-weight:800;color:var(--green-dark)}
+.ts-green{color:#2e7d32}
+.ts-red{color:#c0392b}
 .box-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;padding:0 24px}
 .box-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
 .box-card-header{background:var(--green-dark);padding:22px 24px;display:flex;align-items:center;gap:20px}
@@ -363,6 +370,20 @@ async function openTracking(encodedTracking) {
     if (!byBox[boxId]) byBox[boxId] = [];
     byBox[boxId].push(r);
   }
+
+  // 計算總覽
+  const totalQty = fullItems.reduce((s,r) => s + (parseInt(r.qty)||0), 0);
+  const totalBox = fullItems.reduce((s,r) => s + (parseInt(r.box_type)||0), 0);
+  const shippedQty = fullItems.filter(r => r.ship_box || r.ship_date).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
+  const pendingQty = totalQty - shippedQty;
+
+  const summaryBar = `<div class="tracking-summary">
+    <div class="ts-item"><span class="ts-lbl">總瓶數</span><span class="ts-val">${totalQty} 瓶</span></div>
+    <div class="ts-item"><span class="ts-lbl">已回台</span><span class="ts-val ts-green">${shippedQty} 瓶</span></div>
+    <div class="ts-item"><span class="ts-lbl">未回台</span><span class="ts-val ts-red">${pendingQty} 瓶</span></div>
+    <div class="ts-item"><span class="ts-lbl">酒盒</span><span class="ts-val">${totalBox} 個</span></div>
+  </div>`;
+  document.getElementById('box-cards').insertAdjacentHTML('beforebegin', summaryBar);
 
   const cards = Object.entries(byBox).map(([boxId, rows]) => {
     const first = rows[0];
