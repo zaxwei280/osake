@@ -269,7 +269,7 @@ function renderList(showSummary = false) {
   body.innerHTML = groups.map(g => {
     const dot = g.shipped ? '<span class="dot-shipped"></span>' : '<span class="dot-pending"></span>';
     const dates = [...g.dates].sort().reverse()[0] || '—';
-    const boxes = [...g.ship_boxes].join('、') || '—';
+    const boxes = [...g.ship_boxes].length ? [...g.ship_boxes].map(b => `<div>${b}</div>`).join('') : '—';
 
     let summaryHtml = '';
     if (showSummary) {
