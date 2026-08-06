@@ -64,14 +64,24 @@ export default async function handler(req) {
   else if (filters.length > 1) query.filter = { and: filters };
 
   try {
-    const res = await fetch(`https://api.notion.com/v1/databases/${DB_ID}/query`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(query),
-    });
-    const data = await res.json();
+    let allResults = [];
+    let cursor = undefined;
 
-    const rows = (data.results || []).map(page => {
+    do {
+      const queryWithCursor = { ...query };
+      if (cursor) queryWithCursor.start_cursor = cursor;
+
+      const res = await fetch(`https://api.notion.com/v1/databases/${DB_ID}/query`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(queryWithCursor),
+      });
+      const data = await res.json();
+      allResults = allResults.concat(data.results || []);
+      cursor = data.has_more ? data.next_cursor : undefined;
+    } while (cursor);
+
+    const rows = allResults.map(page => {
       const p = page.properties;
       const getText = (key) => {
         if (!p[key]) return "";
