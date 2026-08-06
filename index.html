@@ -367,10 +367,16 @@ async function openTracking(encodedTracking) {
     return;
   }
 
-  // 把 allRows 的出貨資訊合併到 fullItems
+  // 從 fullItems 自己找回台資訊，再補給同箱沒有的列
   const shipMap = {};
-  for (const r of allRows) {
+  for (const r of fullItems) {
     if (r.ship_box) shipMap[r.box_id] = { ship_box: r.ship_box, ship_date: r.ship_date };
+  }
+  // 再從 allRows 補（以防 fullItems 也沒有）
+  for (const r of allRows) {
+    if (r.ship_box && !shipMap[r.box_id]) {
+      shipMap[r.box_id] = { ship_box: r.ship_box, ship_date: r.ship_date };
+    }
   }
   for (const r of fullItems) {
     const s = shipMap[r.box_id];
