@@ -446,13 +446,13 @@ async function openTracking(encodedTracking) {
   const totalBoxT = trackingItems.reduce((a,r) => a + (parseInt(r.box_type)||0), 0);
   const shippedBoxIds = new Set(trackingItems.filter(r => r.ship_box || r.ship_date).map(r => r.box_id));
   const pendingBoxIds = new Set(trackingItems.filter(r => !r.ship_box && !r.ship_date).map(r => r.box_id));
-  const shippedQty = trackingItems.filter(r => shippedBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
-  const pendingQty = trackingItems.filter(r => pendingBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
+  const tShippedQty = trackingItems.filter(r => shippedBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
+  const tPendingQty = trackingItems.filter(r => pendingBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
 
   document.getElementById('detail-stats').innerHTML = `
     <div class="stat-chip total"><span class="s-lbl">總瓶數</span><span class="s-val">${totalQtyT} 瓶</span></div>
-    <div class="stat-chip shipped"><span class="s-lbl">已回台</span><span class="s-val">${shippedQty} 瓶</span></div>
-    <div class="stat-chip pending"><span class="s-lbl">未回台</span><span class="s-val">${pendingQty} 瓶</span></div>
+    <div class="stat-chip shipped"><span class="s-lbl">已回台</span><span class="s-val">${tShippedQty} 瓶</span></div>
+    <div class="stat-chip pending"><span class="s-lbl">未回台</span><span class="s-val">${tPendingQty} 瓶</span></div>
     <div class="stat-chip box"><span class="s-lbl">酒盒</span><span class="s-val">${totalBoxT} 個</span></div>
   `;
 
