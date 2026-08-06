@@ -380,19 +380,6 @@ async function openTracking(encodedTracking) {
     byBox[boxId].push(r);
   }
 
-  // 計算總覽
-  const totalQty = fullItems.reduce((s,r) => s + (parseInt(r.qty)||0), 0);
-  const totalBox = fullItems.reduce((s,r) => s + (parseInt(r.box_type)||0), 0);
-  const shippedQty = fullItems.filter(r => r.ship_box || r.ship_date).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
-  const pendingQty = totalQty - shippedQty;
-
-  const summaryBar = `<div class="tracking-summary">
-    <div class="ts-item"><span class="ts-lbl">總瓶數</span><span class="ts-val">${totalQty} 瓶</span></div>
-    <div class="ts-item"><span class="ts-lbl">已回台</span><span class="ts-val ts-green">${shippedQty} 瓶</span></div>
-    <div class="ts-item"><span class="ts-lbl">未回台</span><span class="ts-val ts-red">${pendingQty} 瓶</span></div>
-    <div class="ts-item"><span class="ts-lbl">酒盒</span><span class="ts-val">${totalBox} 個</span></div>
-  </div>`;
-  document.getElementById('box-cards').insertAdjacentHTML('beforebegin', summaryBar);
 
   const cards = Object.entries(byBox).map(([boxId, rows]) => {
     const first = rows[0];
