@@ -274,7 +274,7 @@ function renderList(showSummary = false) {
     if (!grouped[key]) grouped[key] = { tracking: key, dates: new Set(), ship_boxes: new Set(), shipped: false };
     if (r.ship_date) grouped[key].dates.add(r.ship_date);
     if (r.ship_box) grouped[key].ship_boxes.add(r.ship_box);
-    if (r.ship_box || r.ship_date) grouped[key].shipped = true;
+    if (r.ship_box) grouped[key].shipped = true;
   }
 
   const groups = Object.values(grouped);
@@ -367,6 +367,19 @@ async function openTracking(encodedTracking) {
     return;
   }
 
+  // 把 allRows 的出貨資訊合併到 fullItems
+  const shipMap = {};
+  for (const r of allRows) {
+    if (r.ship_box) shipMap[r.box_id] = { ship_box: r.ship_box, ship_date: r.ship_date };
+  }
+  for (const r of fullItems) {
+    const s = shipMap[r.box_id];
+    if (s) {
+      if (!r.ship_box)  r.ship_box  = s.ship_box;
+      if (!r.ship_date) r.ship_date = s.ship_date;
+    }
+  }
+
   if (!fullItems.length) {
     document.getElementById('box-cards').innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>找不到資料</p></div>';
     return;
@@ -383,7 +396,7 @@ async function openTracking(encodedTracking) {
 
   const cards = Object.entries(byBox).map(([boxId, rows]) => {
     const first = rows[0];
-    const shipped = first.ship_box || first.ship_date;
+    const shipped = !!first.ship_box;
     const badge = shipped
       ? '<span class="status-badge badge-shipped">✔ 已回台</span>'
       : '<span class="status-badge badge-pending">⏳ 未回台</span>';
@@ -431,8 +444,8 @@ async function openTracking(encodedTracking) {
   const trackingItems = fullItems.filter(r => r.tracking === tracking);
   const totalQtyT = trackingItems.reduce((a,r) => a + (parseInt(r.qty)||0), 0);
   const totalBoxT = trackingItems.reduce((a,r) => a + (parseInt(r.box_type)||0), 0);
-  const shippedBoxIds = new Set(trackingItems.filter(r => r.ship_box || r.ship_date).map(r => r.box_id));
-  const pendingBoxIds = new Set(trackingItems.filter(r => !r.ship_box && !r.ship_date).map(r => r.box_id));
+  const shippedBoxIds = new Set(trackingItems.filter(r => r.ship_box).map(r => r.box_id));
+  const pendingBoxIds = new Set(trackingItems.filter(r => !r.ship_box).map(r => r.box_id));
   const tShippedQty = trackingItems.filter(r => shippedBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
   const tPendingQty = trackingItems.filter(r => pendingBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
 
