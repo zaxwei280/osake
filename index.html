@@ -131,6 +131,14 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
   .list-head,.list-row{grid-template-columns:110px 1fr 100px}
   .box-card-detail{grid-template-columns:1fr}
 }
+.tracking-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.stat-chip{background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 18px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--shadow)}
+.stat-chip .s-lbl{font-size:12px;color:var(--text-sub);font-weight:600;letter-spacing:0.5px}
+.stat-chip .s-val{font-size:22px;font-weight:800}
+.stat-chip.total .s-val{color:var(--green-dark)}
+.stat-chip.shipped .s-val{color:#2e7d32}
+.stat-chip.pending .s-val{color:#c0392b}
+.stat-chip.box .s-val{color:#8a7248}
 </style>
 </head>
 <body>
@@ -186,6 +194,7 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
   <div class="tracking-header">
     <div class="tracking-client-tag" id="detail-client"></div>
     <div class="tracking-number" id="detail-tracking"></div>
+    <div class="tracking-stats" id="detail-stats"></div>
   </div>
   <div class="box-cards" id="box-cards"></div>
 </div>
@@ -430,6 +439,22 @@ async function openTracking(encodedTracking) {
       ${details}
     </div>`;
   }).join('');
+
+  // 計算該宅配編號的統計（只算搜尋的那個 tracking）
+  const trackingItems = fullItems.filter(r => r.tracking === tracking);
+  const totalQtyT = trackingItems.reduce((a,r) => a + (parseInt(r.qty)||0), 0);
+  const totalBoxT = trackingItems.reduce((a,r) => a + (parseInt(r.box_type)||0), 0);
+  const shippedBoxIds = new Set(trackingItems.filter(r => r.ship_box || r.ship_date).map(r => r.box_id));
+  const pendingBoxIds = new Set(trackingItems.filter(r => !r.ship_box && !r.ship_date).map(r => r.box_id));
+  const shippedQty = trackingItems.filter(r => shippedBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
+  const pendingQty = trackingItems.filter(r => pendingBoxIds.has(r.box_id)).reduce((a,r)=>a+(parseInt(r.qty)||0),0);
+
+  document.getElementById('detail-stats').innerHTML = `
+    <div class="stat-chip total"><span class="s-lbl">總瓶數</span><span class="s-val">${totalQtyT} 瓶</span></div>
+    <div class="stat-chip shipped"><span class="s-lbl">已回台</span><span class="s-val">${shippedQty} 瓶</span></div>
+    <div class="stat-chip pending"><span class="s-lbl">未回台</span><span class="s-val">${pendingQty} 瓶</span></div>
+    <div class="stat-chip box"><span class="s-lbl">酒盒</span><span class="s-val">${totalBoxT} 個</span></div>
+  `;
 
   document.getElementById('box-cards').innerHTML = cards;
 }
