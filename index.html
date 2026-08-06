@@ -105,6 +105,14 @@ header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:2px}
 .spinner{width:32px;height:32px;border:3px solid var(--green-pale);border-top-color:var(--green-dark);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+@media(max-width:768px){
+  .box-cards{grid-template-columns:1fr !important;padding:0 8px}
+  .box-card-detail{grid-template-columns:1fr 1fr}
+  .client-grid{grid-template-columns:repeat(2,1fr)}
+  .search-row{flex-wrap:wrap}
+  .btn-search{width:100%}
+  .tracking-header{padding:0 4px}
+}
 @media(max-width:600px){
   .client-grid{grid-template-columns:repeat(2,1fr)}
   .search-row{flex-wrap:wrap}
