@@ -50,7 +50,7 @@ export default async function handler(req) {
 
   // Build filter - all rich_text except 回台日期
   const filters = [];
-  if (client)   filters.push({ property: "客戶編號", rich_text: { contains: client } });
+  if (client)   filters.push({ property: "客戶編號", rich_text: { equals: client } });
   if (tracking) filters.push({ property: "宅配編號", rich_text: { contains: tracking } });
   if (box_no)   filters.push({ property: "回台箱號", rich_text: { contains: box_no } });
   if (box_id)   filters.push({ property: "酒箱編號", rich_text: { equals: box_id } });
